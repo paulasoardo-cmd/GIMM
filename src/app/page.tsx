@@ -398,35 +398,73 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: `1px solid ${HU.gray1}` }}>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${HU.gray1}` }}>
-                    {["CC Nóminas","Concepto","Tipo","Regla de cálculo"].map((h) => (
-                      <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider"
-                        style={{ color: "#9CA3AF", background: HU.gray2 }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {TABLAS[activeTab].map((c, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors"
-                      style={{ borderBottom: i < TABLAS[activeTab].length - 1 ? `1px solid ${HU.gray1}` : "none" }}>
-                      <td className="px-5 py-3.5 font-mono font-bold text-sm" style={{ color: HU.blue }}>{c.id}</td>
-                      <td className="px-5 py-3.5 font-medium" style={{ color: HU.navy }}>{c.nombre}</td>
-                      <td className="px-5 py-3.5">
-                        <span className="text-xs font-semibold uppercase" style={{ color: TIPO_STYLE[c.tipo].color }}>
-                          {c.tipo}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-xs" style={{ color: HU.dark }}>{c.calculo}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {(() => {
+              const TIPO_ORDER = ["percepcion","deduccion","incapacidad","informativo"] as const;
+              const TIPO_LABELS: Record<string, string> = {
+                percepcion:  "Percepciones",
+                deduccion:   "Deducciones",
+                incapacidad: "Incapacidades",
+                informativo: "Informativos",
+              };
+              const TIPO_COLORS_BG: Record<string, { section: string; dot: string; text: string }> = {
+                percepcion:  { section: "#F0FDF4", dot: "#22C55E", text: "#166534" },
+                deduccion:   { section: "#FFF1F2", dot: "#F43F5E", text: "#9F1239" },
+                incapacidad: { section: "#FFFBEB", dot: "#F59E0B", text: "#92400E" },
+                informativo: { section: "#F8FAFC", dot: "#94A3B8", text: "#475569" },
+              };
+              const grouped = TIPO_ORDER
+                .map((tipo) => ({ tipo, items: TABLAS[activeTab].filter((c) => c.tipo === tipo) }))
+                .filter((g) => g.items.length > 0);
+
+              return (
+                <div className="rounded-2xl overflow-hidden" style={{ background: "#fff", border: `1px solid ${HU.gray1}` }}>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr style={{ borderBottom: `1px solid ${HU.gray1}` }}>
+                        {["CC Nóminas","Concepto","Regla de cálculo"].map((h) => (
+                          <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider"
+                            style={{ color: "#9CA3AF", background: HU.gray2 }}>
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grouped.map(({ tipo, items }) => {
+                        const tc = TIPO_COLORS_BG[tipo];
+                        return (
+                          <>
+                            {/* Section header */}
+                            <tr key={`header-${tipo}`} style={{ background: tc.section, borderTop: `1px solid ${HU.gray1}` }}>
+                              <td colSpan={3} className="px-5 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: tc.dot }} />
+                                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: tc.text }}>
+                                    {TIPO_LABELS[tipo]}
+                                  </span>
+                                  <span className="text-xs font-normal ml-1" style={{ color: tc.text, opacity: 0.6 }}>
+                                    {items.length} concepto{items.length !== 1 ? "s" : ""}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                            {/* Items */}
+                            {items.map((c, i) => (
+                              <tr key={`${tipo}-${i}`} className="hover:bg-gray-50 transition-colors"
+                                style={{ borderBottom: `1px solid ${HU.gray1}` }}>
+                                <td className="px-5 py-3.5 font-mono font-bold text-sm w-32" style={{ color: HU.blue }}>{c.id}</td>
+                                <td className="px-5 py-3.5 font-medium" style={{ color: HU.navy }}>{c.nombre}</td>
+                                <td className="px-5 py-3.5 text-xs" style={{ color: HU.dark }}>{c.calculo}</td>
+                              </tr>
+                            ))}
+                          </>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
           </div>
         )}
 
